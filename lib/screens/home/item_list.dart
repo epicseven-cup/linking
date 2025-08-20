@@ -16,9 +16,8 @@ import '../../component/share_item.dart';
 
 class ItemList extends StatefulWidget {
 
-  const ItemList({super.key, required this.cb});
+  const ItemList({super.key});
 
-  final ValueGetter<List<ShareItem>> cb;
 
   @override
   State<StatefulWidget> createState() => _ItemListState();
@@ -42,12 +41,22 @@ class _ItemListState extends State<ItemList> {
 
 
   void _startWebSocketServer() async {
-    var handler = webSocketHandler((webSocket, _) {
+    var handler = webSocketHandler((webSocket, d) {
       log('hello');
-      setState(() {
-        log('Hello world');
-        items.add(ShareItem(title: 'test', content:'test'));
+      log(d.toString());
+      webSocket.stream.listen((message) {
+        log(message);
+        Item _item = Item.fromJson(jsonDecode(message));
+        setState(() {
+          if (_item.type == 0){
+            items.add(ShareItem(title: _item.clipboard, content: _item.clipboard));
+          } else {
+            items.add(ShareItem(title: 'File' , content: _item.attachment));
+          }
+        });
       });
+
+      
 
     });
 

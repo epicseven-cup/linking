@@ -4,6 +4,7 @@ import 'dart:ffi';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:linking/component/upload_file.dart';
 import 'package:linking/services/linking_service.dart';
 import 'package:multicast_dns/multicast_dns.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
@@ -38,6 +39,18 @@ class _DeviceListState extends State<DeviceList> {
     setState(() {
       selectedDevice[v.index] = v.check;
     });
+  }
+
+  List<String> _getAddresses(){
+    late List <String> address = [];
+    for (var i = 0; i < selectedDevice.length; i++) {
+      if (selectedDevice[i]) {
+        String addr = 'ws://${devices[i].$2}:${devices[i].$1.port}';
+        log(addr);
+        address.add(addr);
+      }
+    }
+    return address;
   }
 
 
@@ -97,19 +110,17 @@ class _DeviceListState extends State<DeviceList> {
               TextButton(onPressed: () {
                 showDialog(context: context,
                     builder: (context) {
-                      late List <String> address = [];
-                      for (var i = 0; i < selectedDevice.length; i++) {
-                        if (selectedDevice[i]) {
-                          String addr = 'ws://${devices[i].$2}:${devices[i].$1.port}';
-                          log(addr);
-                          address.add(addr);
-                        }
-                      }
-                      return UploadText(address: address);
+                      return UploadText(address: _getAddresses());
                     }
                 );
               }, child: Text('Send Text')),
-              TextButton(onPressed: () {}, child: Text('Send File')),
+              TextButton(onPressed: () {
+                showDialog(context: context,
+                    builder: (context) {
+                      return UploadFile(addresses: _getAddresses());
+                    }
+                );
+              }, child: Text('Send File')),
             ],
           ),
         ],

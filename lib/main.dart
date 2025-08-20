@@ -14,41 +14,7 @@ import 'package:shelf_web_socket/shelf_web_socket.dart';
 import 'component/share_item.dart';
 
 void main() {
-  // _background_service();
   runApp(const Linking());
-}
-
-List<ShareItem> si = [];
-
-// sendport is used to pass the data back to main thread, but in this case I already have a websocket client setup it is not needed
-Future<void> _startWebSocketServer(SendPort send) async {
-  var handler = webSocketHandler((webSocket, _) {
-    webSocket.stream.listen((message) {
-      send.send(message);
-    });
-  });
-
-  await shelf_io.serve(handler, '0.0.0.0', 3000);
-  log("The server si up");
-}
-
-void _background_service() async {
-  final rp = ReceivePort();
-  await Isolate.spawn(_startWebSocketServer, rp.sendPort);
-  rp.listen((data) {
-    log(data);
-    log(si.length.toString());
-    Item dItem = Item.fromJson(jsonDecode(data));
-    if (dItem.type == 0) {
-      si.add(ShareItem(title: dItem.clipboard, content: dItem.clipboard));
-    } else {
-      si.add(ShareItem(title: 'File', content: dItem.attachment));
-    }
-  });
-}
-
-List<ShareItem> cb() {
-  return si;
 }
 
 class Linking extends StatelessWidget {
@@ -70,7 +36,7 @@ class Linking extends StatelessWidget {
                 spacing: 50,
                 children: [
                   DeviceList(),
-                  ItemList(cb: cb),
+                  ItemList(),
                 ],
               ),
             ),
